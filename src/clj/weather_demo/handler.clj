@@ -6,7 +6,16 @@
             [hiccup.page :refer [include-js include-css]]
             [prone.middleware :refer [wrap-exceptions]]
             [ring.middleware.reload :refer [wrap-reload]]
-            [environ.core :refer [env]]))
+            [environ.core :refer [env]]
+
+            [clojure.java.io :as io]
+            [cheshire.core :as json]
+            [ring.util.response :refer [response]]
+            [ring.middleware.json :refer [wrap-json-response]]))
+
+(def countries
+  (with-open [rdr (io/reader "https://raw.githubusercontent.com/mledoze/countries/master/countries.json")]
+    (doall (json/parse-stream rdr))))
 
 (def mount-target
   [:div#app
@@ -31,10 +40,14 @@
 (defroutes routes
   (GET "/" [] loading-page)
   (GET "/about" [] loading-page)
+
+  (GET "/api/countries/" [] (response countries))
   
   (resources "/")
   (not-found "Not Found"))
 
 (def app
-  (let [handler (wrap-defaults #'routes site-defaults)]
+  (let [handler (-> #'routes
+                    (wrap-json-response)
+                    (wrap-defaults site-defaults))]
     (if (env :dev) (-> handler wrap-exceptions wrap-reload) handler)))

@@ -19,7 +19,8 @@
                  [secretary "1.2.3"]
                  [venantius/accountant "0.1.4"]
                  
-                 ]
+                 [cheshire "5.5.0"]
+                 [ring/ring-json "0.4.0"]]
 
   :plugins [[lein-environ "1.0.1"]
             [lein-cljsbuild "1.1.1"]
