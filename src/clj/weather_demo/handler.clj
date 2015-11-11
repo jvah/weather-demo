@@ -11,7 +11,8 @@
             [clojure.java.io :as io]
             [cheshire.core :as json]
             [ring.util.response :refer [response]]
-            [ring.middleware.json :refer [wrap-json-response]])
+            [ring.middleware.json :refer [wrap-json-response]]
+            [clj-http.client :as http])
   (:import [java.util.zip GZIPInputStream]))
 
 (def countries
@@ -22,6 +23,12 @@
   (with-open [input (io/input-stream "http://bulk.openweathermap.org/sample/city.list.json.gz")]
     (let [lines (line-seq (io/reader (GZIPInputStream. input)))]
       (group-by #(get % "country") (map json/parse-string lines)))))
+
+(defn get-weather [path params]
+  (let [url (str "http://api.openweathermap.org/data/" path)
+        params (assoc params :appid (env :weather-appid))]
+    (:body
+      (http/get url {:query-params params :as :json}))))
 
 (def mount-target
   [:div#app
@@ -49,6 +56,8 @@
 
   (GET "/api/countries/" [] (response countries))
   (GET "/api/cities/:country" [country] (response (or (get cities country) [])))
+  (GET "/data/*" request (response (get-weather (-> request :route-params :*)
+                                                (-> request :query-params))))
   
   (resources "/")
   (not-found "Not Found"))
