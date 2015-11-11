@@ -52,7 +52,7 @@
 
 (defroutes routes
   (GET "/" [] loading-page)
-  (GET "/about" [] loading-page)
+  (GET "/weather" [] loading-page)
 
   (GET "/api/countries/" [] (response countries))
   (GET "/api/cities/:country" [country] (response (or (get cities country) [])))

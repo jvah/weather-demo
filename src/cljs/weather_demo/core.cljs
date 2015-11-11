@@ -9,11 +9,11 @@
 
 (defn home-page []
   [:div [:h2 "Welcome to weather-demo"]
-   [:div [:a {:href "/about"} "go to about page"]]])
+   [:div "You might want to check out the " [:a {:href "/weather"} "weather"]]])
 
-(defn about-page []
-  [:div [:h2 "About weather-demo"]
-   [:div [:a {:href "/"} "go to the home page"]]])
+(defn weather-page []
+  [:div [:h2 "Weather page"]
+   [:div "There is nothing to see here yet, but will be soon."]])
 
 (defn current-page []
   [:div [(session/get :current-page)]])
@@ -24,8 +24,8 @@
 (secretary/defroute "/" []
   (session/put! :current-page #'home-page))
 
-(secretary/defroute "/about" []
-  (session/put! :current-page #'about-page))
+(secretary/defroute "/weather" []
+  (session/put! :current-page #'weather-page))
 
 ;; -------------------------
 ;; Initialize app
