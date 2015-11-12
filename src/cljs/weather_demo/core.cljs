@@ -75,6 +75,20 @@
 (defn dt->date [dt]
   (js/Date. (* dt 1000)))
 
+;; function timeFormatter() {
+;;   var input = this;
+;;   return input['value'].toLocaleTimeString(navigator.language, {
+;;     hour: '2-digit',
+;;     minute: '2-digit'
+;;   });
+;; }
+(defn time-formatter []
+  (this-as input
+    (.toLocaleTimeString
+      (aget input "value")
+      js/navigator.language
+      (clj->js {:hour "2-digit" :minute "2-digit"}))))
+
 (defn forecast-config [forecast]
   (let [city-name (-> forecast :city :name)
         entries (take 10 (-> forecast :list))
@@ -83,10 +97,12 @@
         snow (map (comp :3h :snow) entries)
         prcp (map (fnil + 0 0) rain snow)
         temp (map (comp :temp :main) entries)]
-    {:chart {:type "column"}
+    {:chart {:type "column"
+             :marginLeft 20}
      :title {:text (str "Weather forecast for " city-name)}
      :xAxis {:type "datetime"
-             :categories time}
+             :categories time
+             :labels {:formatter time-formatter}}
      :yAxis [
        {:labels {:format "{value}°C"
                  :style {:color "blue"}}
