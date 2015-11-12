@@ -26,6 +26,12 @@
   (if-not countries [:select [:option "Loading countries..."]]
     [bind-fields (country-selector countries) country-atom]))
 
+(defn country-description [countries country-id]
+  (println "Rendering country description for" country-id)
+  (if-not country-id [:p "No country selected"]
+    (let [country (first (filter #(= (:cca2 %) country-id) countries))]
+      [:p "Selected country is " (country-name country)])))
+
 (defn home-page []
   [:div [:h2 "Welcome to weather-demo"]
    [:div "You might want to check out the " [:a {:href "/weather"} "weather"]]])
@@ -38,7 +44,8 @@
        :response-format (json-response-format {:keywords? true})})
     (fn []
       [:div [:h2 "Weather page"]
-       [country-field @countries selected-country]])))
+       [country-field @countries selected-country]
+       [country-description @countries (:id @selected-country)]])))
 
 (defn current-page []
   [:div [(session/get :current-page)]])
