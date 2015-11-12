@@ -44,7 +44,7 @@
 (defn city-field []
   (println "Rendering city field for" (count @cities) "cities")
   (if-not @cities [:select [:option "Loading cities..."]]
-    [bind-fields (city-selector @cities) app-state]))
+    [(bind-fields (city-selector @cities) app-state)]))
 
 (defn load-city-field [country-id]
   (when country-id
