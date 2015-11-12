@@ -72,9 +72,41 @@
        :response-format (json-response-format {:keywords? true})}))
   [city-field])
 
+(defn dt->date [dt]
+  (js/Date. (* dt 1000)))
+
+(defn forecast-config [forecast]
+  (let [city-name (-> forecast :city :name)
+        entries (take 10 (-> forecast :list))
+        time (map (comp dt->date :dt) entries)
+        rain (map (comp :3h :rain) entries)
+        snow (map (comp :3h :snow) entries)
+        prcp (map (fnil + 0 0) rain snow)
+        temp (map (comp :temp :main) entries)]
+    {:chart {:type "column"}
+     :title {:text (str "Weather forecast for " city-name)}
+     :xAxis {:type "datetime"
+             :categories time}
+     :yAxis [
+       {:labels {:format "{value}°C"
+                 :style {:color "blue"}}
+        :title {:text nil}
+        :opposite true}
+       {:labels {:format "{value}mm"
+                 :style {:color "#4572A7"}}
+        :title {:text nil}
+        :opposite true}
+     ]
+     :tooltip {:shared true}
+     :series [
+       {:type "column" :name "Precipitation" :color "#A0A0A0" :yAxis 1 :data prcp}
+       {:type "spline" :name "Temperature" :color "blue" :yAxis 0 :data temp}
+     ]}))
+
 (defn forecast-chart [forecast-atom]
   (println "Rendering forecast chart for" (-> @forecast-atom :city :name))
-  [hc-chart {:config {}}])
+  (if-not @forecast-atom [:div "Wait while the chart is loading..."]
+    [hc-chart {:config (forecast-config @forecast-atom)}]))
 
 (defn load-forecast-chart [city-id]
   (let [forecast (atom nil)]
