@@ -47,6 +47,8 @@
      (include-css (if (env :dev) "css/site.css" "css/site.min.css"))]
     [:body
      mount-target
+     (include-js "http://code.highcharts.com/adapters/standalone-framework.js")
+     (include-js "http://code.highcharts.com/highcharts.js")
      (include-js "js/app.js")]]))
 
 

@@ -53,7 +53,8 @@
                                         :output-dir "target/cljsbuild/public/js/out"
                                         :asset-path   "js/out"
                                         :optimizations :none
-                                        :pretty-print  true}}}}
+                                        :pretty-print  true
+                                        :externs       ["externs.js"]}}}}
 
   :profiles {:dev {:repl-options {:init-ns weather-demo.repl}
 

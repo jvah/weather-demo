@@ -13,6 +13,22 @@
 (def city-id (reagent/cursor app-state [:city :id]))
 
 ;; -------------------------
+;; Components
+
+(defn hc-chart-draw [this]
+  (let [node (reagent/dom-node this)
+        {:keys [config]} (reagent/props this)]
+    (when config
+      (js/Highcharts.Chart.
+        (clj->js (assoc-in config [:chart :renderTo] node))))))
+
+(defn hc-chart [config]
+  (reagent/create-class {:display-name "highcharts"
+                         :reagent-render (fn [] [:div])
+                         :component-did-mount hc-chart-draw
+                         :component-did-update hc-chart-draw}))
+
+;; -------------------------
 ;; Views
 
 (defn country-name [country]
@@ -56,6 +72,10 @@
        :response-format (json-response-format {:keywords? true})}))
   [city-field])
 
+(defn forecast-chart []
+  (println "Rendering forecast chart")
+  [hc-chart {:config {}}])
+
 (defn home-page []
   [:div [:h2 "Welcome to weather-demo"]
    [:div "You might want to check out the " [:a {:href "/weather"} "weather"]]])
@@ -70,7 +90,8 @@
       [:div [:h2 "Weather page"]
        [country-field @countries selected-country]
        [load-city-field (:id @selected-country)]
-       [country-description @countries (:id @selected-country)]])))
+       [country-description @countries (:id @selected-country)]
+       [forecast-chart]])))
 
 (defn current-page []
   [:div [(session/get :current-page)]])
