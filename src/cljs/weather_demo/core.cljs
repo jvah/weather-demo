@@ -72,9 +72,22 @@
        :response-format (json-response-format {:keywords? true})}))
   [city-field])
 
-(defn forecast-chart []
-  (println "Rendering forecast chart")
+(defn forecast-chart [forecast-atom]
+  (println "Rendering forecast chart for" (-> @forecast-atom :city :name))
   [hc-chart {:config {}}])
+
+(defn load-forecast-chart [city-id]
+  (let [forecast (atom nil)]
+    (fn [city-id]
+      (when city-id
+        (reset! forecast nil)
+        (println "Loading forecast data for city" city-id)
+        (GET "data/2.5/forecast"
+          {:params {:units "metric"
+                    :id city-id}
+           :handler #(reset! forecast %)
+           :response-format (json-response-format {:keywords? true})}))
+      [forecast-chart forecast])))
 
 (defn home-page []
   [:div [:h2 "Welcome to weather-demo"]
@@ -91,7 +104,7 @@
        [country-field @countries selected-country]
        [load-city-field (:id @selected-country)]
        [country-description @countries (:id @selected-country)]
-       [forecast-chart]])))
+       [load-forecast-chart @city-id]])))
 
 (defn current-page []
   [:div [(session/get :current-page)]])
