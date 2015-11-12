@@ -8,6 +8,10 @@
               [ajax.core :refer [GET json-response-format]]
               [clojure.string :as string]))
 
+(def app-state (atom {}))
+(def cities (reagent/cursor app-state [:cities]))
+(def city-id (reagent/cursor app-state [:city :id]))
+
 ;; -------------------------
 ;; Views
 
@@ -32,6 +36,26 @@
     (let [country (first (filter #(= (:cca2 %) country-id) countries))]
       [:p "Selected country is " (country-name country)])))
 
+(defn city-selector [cities]
+  [:select {:field :list :id :city.id}
+   (for [city (sort-by :name cities)]
+     [:option {:key (:_id city)} (:name city)])])
+
+(defn city-field []
+  (println "Rendering city field for" (count @cities) "cities")
+  (if-not @cities [:select [:option "Loading cities..."]]
+    [bind-fields (city-selector @cities) app-state]))
+
+(defn load-city-field [country-id]
+  (when country-id
+    (reset! cities nil)
+    (reset! city-id nil)
+    (println "Loading cities for" country-id)
+    (GET (str "/api/cities/" country-id)
+      {:handler #(reset! cities %)
+       :response-format (json-response-format {:keywords? true})}))
+  [city-field])
+
 (defn home-page []
   [:div [:h2 "Welcome to weather-demo"]
    [:div "You might want to check out the " [:a {:href "/weather"} "weather"]]])
@@ -45,6 +69,7 @@
     (fn []
       [:div [:h2 "Weather page"]
        [country-field @countries selected-country]
+       [load-city-field (:id @selected-country)]
        [country-description @countries (:id @selected-country)]])))
 
 (defn current-page []
